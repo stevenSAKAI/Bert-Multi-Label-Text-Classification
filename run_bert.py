@@ -128,10 +128,10 @@ def run_test(args):
     from pybert.io.task_data import TaskData
     from pybert.test.predictor import Predictor
     data = TaskData()
-    targets, sentences = data.read_data(raw_data_path=config['test_path'],
+    targets, sentences, ids = data.read_data(raw_data_path=config['test_path'],
                                         preprocessor=EnglishPreProcessor(),
                                         is_train=False)
-    lines = list(zip(sentences, targets))
+    lines = list(zip(sentences, targets,ids))
     processor = BertProcessor(vocab_path=config['bert_vocab_path'], do_lower_case=args.do_lower_case)
     label_list = processor.get_labels()
     id2label = {i: label for i, label in enumerate(label_list)}
@@ -181,8 +181,8 @@ def main():
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1)
     parser.add_argument("--train_batch_size", default=8, type=int)
     parser.add_argument('--eval_batch_size', default=8, type=int)
-    parser.add_argument("--train_max_seq_len", default=256, type=int)
-    parser.add_argument("--eval_max_seq_len", default=256, type=int)
+    parser.add_argument("--train_max_seq_len", default=32, type=int)
+    parser.add_argument("--eval_max_seq_len", default=32, type=int)
     parser.add_argument('--loss_scale', type=float, default=0)
     parser.add_argument("--warmup_proportion", default=0.1, type=int, )
     parser.add_argument("--weight_decay", default=0.01, type=float)
@@ -206,10 +206,10 @@ def main():
     if args.do_data:
         from pybert.io.task_data import TaskData
         data = TaskData()
-        targets, sentences = data.read_data(raw_data_path=config['raw_data_path'],
+        targets, sentences, ids = data.read_data(raw_data_path=config['raw_data_path'],
                                             preprocessor=EnglishPreProcessor(),
                                             is_train=True)
-        data.train_val_split(X=sentences, y=targets, shuffle=True, stratify=False,
+        data.train_val_split(X=sentences, y=targets, ids = ids, shuffle=True, stratify=False,
                              valid_size=args.valid_size, data_dir=config['data_dir'],
                              data_name=args.data_name)
     if args.do_train:

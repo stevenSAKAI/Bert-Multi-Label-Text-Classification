@@ -8,7 +8,7 @@ from ..callback.progressbar import ProgressBar
 class TaskData(object):
     def __init__(self):
         pass
-    def train_val_split(self,X, y,valid_size,stratify=False,shuffle=True,save = True,
+    def train_val_split(self,X, y,ids, valid_size,stratify=False,shuffle=True,save = True,
                         seed = None,data_name = None,data_dir = None):
         pbar = ProgressBar(n_total=len(X))
         logger.info('split raw data into train and valid')
@@ -35,8 +35,8 @@ class TaskData(object):
                 random.shuffle(train)
         else:
             data = []
-            for step,(data_x, data_y) in enumerate(zip(X, y)):
-                data.append((data_x, data_y))
+            for step,(data_x, data_y, data_id) in enumerate(zip(X, y, ids)):
+                data.append((data_x, data_y,data_id))
                 pbar.batch_step(step=step, info={}, bar_type='merge')
             del X, y
             N = len(data)
@@ -64,17 +64,24 @@ class TaskData(object):
         :param preprocessor:
         :return:
         '''
-        targets, sentences = [], []
-        data = pd.read_csv(raw_data_path)
+        targets, sentences, ids = [], [], []
+
+        data = pd.read_json(raw_data_path)
+        # data = pd.read_csv(raw_data_path)
         for row in data.values:
             if is_train:
-                target = row[2:]
+                target = row[0:1]  # change to my data
+                sentence = str(row[2:])
+                id = row[1:2]
             else:
-                target = [-1,-1,-1,-1,-1,-1]
-            sentence = str(row[1])
+                target = [-1] # change to my data
+                sentence = str(row[1:])
+                id = row[0:1]
+            # sentence = str(row[2:])
             if preprocessor:
                 sentence = preprocessor(sentence)
             if sentence:
                 targets.append(target)
                 sentences.append(sentence)
-        return targets,sentences
+                ids.append(id)
+        return targets,sentences, ids

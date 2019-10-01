@@ -28,12 +28,13 @@ class InputFeature(object):
     '''
     A single set of features of data.
     '''
-    def __init__(self,input_ids,input_mask,segment_ids,label_id,input_len):
+    def __init__(self,input_ids,input_mask,segment_ids,label_id,input_len, guid):
         self.input_ids   = input_ids
         self.input_mask  = input_mask
         self.segment_ids = segment_ids
         self.label_id    = label_id
         self.input_len = input_len
+        self.guid = guid
 
 class BertProcessor(object):
     """Base class for data converters for sequence classification data sets."""
@@ -54,7 +55,9 @@ class BertProcessor(object):
 
     def get_labels(self):
         """Gets the list of labels for this data set."""
-        return ["toxic","severe_toxic","obscene","threat","insult","identity_hate"]
+        # return ["toxic","severe_toxic","obscene","threat","insult","identity_hate"]
+        return [ "identity_hate"]
+
 
     @classmethod
     def read_data(cls, input_file,quotechar = None):
@@ -90,7 +93,8 @@ class BertProcessor(object):
         else:
             examples = []
             for i,line in enumerate(lines):
-                guid = '%s-%d'%(example_type,i)
+                guid = line[2]
+                # '%s-%d'%(example_type,i)
                 text_a = line[0]
                 label = line[1]
                 if isinstance(label,str):
@@ -125,6 +129,7 @@ class BertProcessor(object):
                 tokens_a = self.tokenizer.tokenize(example.text_a)
                 tokens_b = None
                 label_id = example.label
+                guid = example.guid
 
                 if example.text_b:
                     tokens_b = self.tokenizer.tokenize(example.text_b)
@@ -167,7 +172,8 @@ class BertProcessor(object):
                                        input_mask = input_mask,
                                        segment_ids = segment_ids,
                                        label_id = label_id,
-                                       input_len = input_len)
+                                       input_len = input_len,
+                                       guid = guid)
                 features.append(feature)
                 pbar.batch_step(step=ex_id, info={}, bar_type='create features')
             logger.info("Saving features into cached file %s", cached_features_file)

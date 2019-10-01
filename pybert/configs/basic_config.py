@@ -2,8 +2,8 @@
 from pathlib import Path
 BASE_DIR = Path('pybert')
 config = {
-    'raw_data_path': BASE_DIR / 'dataset/train.csv',
-    'test_path': BASE_DIR / 'dataset/test.csv',
+    'raw_data_path': BASE_DIR / 'dataset/train.json',
+    'test_path': BASE_DIR / 'dataset/test.json',
 
     'data_dir': BASE_DIR / 'dataset',
     'log_dir': BASE_DIR / 'output/log',
