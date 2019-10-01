@@ -1,5 +1,9 @@
 #encoding:utf-8
 import re
+from nltk.stem.snowball import SnowballStemmer
+import nltk
+nltk.download("stopwords")
+from nltk.corpus import stopwords
 
 replacement = {
     "aren't" : "are not",
@@ -61,31 +65,43 @@ replacement = {
     "tryin'":"trying",
 }
 
+stemmer = SnowballStemmer("english")
+stopwords_en = set(stopwords.words('english'))
+
+# now build a custom tokenizer based on these
+__tokenization_pattern = r'''(?x)          # set flag to allow verbose regexps
+            \$?\d+(?:\.\d+)?%?  # currency and percentages, e.g. $12.40, 82%
+          | (?:[A-Z]\.)+        # abbreviations, e.g. U.S.A.
+          | \w+(?:-\w+)*        # words with optional internal hyphens
+          | \.\.\.              # ellipsis
+          | [][.,;"'?():_`-]    # these are separate tokens; includes ], [
+        '''
+
+tokenizer = nltk.tokenize.regexp.RegexpTokenizer(__tokenization_pattern)
+
 class EnglishPreProcessor(object):
     def __init__(self,min_len = 2,stopwords_path = None):
         self.min_len = min_len
-        self.stopwords_path = stopwords_path
-        self.reset()
 
-    def lower(self,sentence):
+    def preprocessor(self,sentence):
         '''
-        大写转化为小写
-        :param sentence:
-        :return:
+            turns text into tokens after tokenization, stemming, stop words removal
+            imput:
+                - text: document to process
+            output: =>
+                - tokens: list of tokens after tokenization, stemming, stop words removal
         '''
-        return sentence.lower()
+        stems = []
+        tokens = tokenizer.tokenize(sentence.lower())
 
-    def reset(self):
-        '''
-        加载停用词
-        :return:
-        '''
-        if self.stopwords_path:
-            with open(self.stopwords_path,'r') as fr:
-                self.stopwords = {}
-                for line in fr:
-                    word = line.strip(' ').strip('\n')
-                    self.stopwords[word] = 1
+        for token in tokens:
+            if token.isalpha() and token not in stopwords_en:
+                stems.append(str(stemmer.stem(token)))
+        if not stems:
+            for token in tokens:
+                if token not in stopwords_en:
+                    stems.append(str(stemmer.stem(token)))
+        return stems
 
 
     def clean_length(self,sentence):
@@ -172,17 +188,6 @@ class EnglishPreProcessor(object):
         sentence_repl = sentence_repl.replace(r"@", "at")
         return sentence_repl
 
-    def remove_chinese(self,sentence):
-        # Chinese bad word
-        sentence_repl = re.sub(r"fucksex", "fuck sex", sentence)
-        sentence_repl = re.sub(r"f u c k", "fuck", sentence_repl)
-        sentence_repl = re.sub(r"幹", "fuck", sentence_repl)
-        sentence_repl = re.sub(r"死", "die", sentence_repl)
-        sentence_repl = re.sub(r"他妈的", "fuck", sentence_repl)
-        sentence_repl = re.sub(r"去你妈的", "fuck off", sentence_repl)
-        sentence_repl = re.sub(r"肏你妈", "fuck your mother", sentence_repl)
-        sentence_repl = re.sub(r"肏你祖宗十八代", "your ancestors to the 18th generation", sentence_repl)
-        return sentence_repl
 
     def full2half(self,sentence):
         '''
@@ -211,13 +216,5 @@ class EnglishPreProcessor(object):
     # 主函数
     def __call__(self, sentence):
         x = sentence
-        # x = self.lower(x)
-        x = self.replace(x)
-        x = self.remove_website(x)
-        x = self.remove_name_tag(x)
-        x = self.remove_time(x)
-        x = self.remove_breaks(x)
-        x = self.remove_ip(x)
-        x = self.adjust_common(x)
-        x = self.remove_chinese(x)
+        x = self.preprocessor(x)
         return x

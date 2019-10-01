@@ -14,7 +14,7 @@ from pybert.preprocessing.preprocessor import EnglishPreProcessor
 from pybert.callback.modelcheckpoint import ModelCheckpoint
 from pybert.callback.trainingmonitor import TrainingMonitor
 from pybert.train.metrics import AUC, AccuracyThresh, MultiLabelReport
-from pytorch_transformers import AdamW, WarmupLinearSchedule
+from transformers import AdamW, WarmupLinearSchedule
 from torch.utils.data import RandomSampler, SequentialSampler
 
 warnings.filterwarnings("ignore")
@@ -209,7 +209,7 @@ def main():
     if args.do_data:
         from pybert.io.task_data import TaskData
         data = TaskData()
-        targets, sentences = data.read_data(raw_data_path=config['raw_data_path'],
+        targets, sentences= data.read_data(raw_data_path=config['raw_data_path'],
                                             preprocessor=EnglishPreProcessor(),
                                             is_train=True)
         data.train_val_split(X=sentences, y=targets, shuffle=True, stratify=False,

@@ -1,5 +1,5 @@
 import torch.nn as nn
-from pytorch_transformers.modeling_xlnet import XLNetPreTrainedModel, XLNetModel,SequenceSummary
+from transformers.modeling_xlnet import XLNetPreTrainedModel, XLNetModel,SequenceSummary
 
 class XlnetForMultiLable(XLNetPreTrainedModel):
     def __init__(self, config):

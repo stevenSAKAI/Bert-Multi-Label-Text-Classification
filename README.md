@@ -40,9 +40,7 @@ At the root of the project, you will see:
 - PyTorch 1.0
 - matplotlib
 - pandas
-- pytorch_transformers=1.0.0
-
-**note**: pytorch_transformers>=1.2.0, modify `self.apply(self.init_weights)` to `self.init_weights()` in `pybert/model/nn/bert_for_multi_label.py file` .
+- transformers
 
 ### How to use the code
 

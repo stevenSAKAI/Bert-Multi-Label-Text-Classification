@@ -5,7 +5,7 @@ from ..common.tools import load_pickle
 from ..common.tools import logger
 from ..callback.progressbar import ProgressBar
 from torch.utils.data import TensorDataset
-from pytorch_transformers import BertTokenizer
+from transformers import BertTokenizer
 
 class InputExample(object):
     def __init__(self, guid, text_a, text_b=None, label=None):
@@ -55,8 +55,8 @@ class BertProcessor(object):
 
     def get_labels(self):
         """Gets the list of labels for this data set."""
-        # return ["toxic","severe_toxic","obscene","threat","insult","identity_hate"]
-        return [ "identity_hate"]
+        return ["toxic","severe_toxic","obscene","threat","insult","identity_hate"]
+
 
 
     @classmethod
@@ -126,7 +126,7 @@ class BertProcessor(object):
         else:
             features = []
             for ex_id,example in enumerate(examples):
-                tokens_a = self.tokenizer.tokenize(example.text_a)
+                tokens_a = example.text_a
                 tokens_b = None
                 label_id = example.label
                 guid = example.guid

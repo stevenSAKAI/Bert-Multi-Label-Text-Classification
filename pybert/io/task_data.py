@@ -57,7 +57,7 @@ class TaskData(object):
             save_pickle(data = valid,file_path=valid_path)
         return train, valid
 
-    def read_data(self,raw_data_path,preprocessor = None,is_train=True):
+    def read_data(self,raw_data_path,test_data_path=None, preprocessor = None,is_train=True):
         '''
         :param raw_data_path:
         :param skip_header:
@@ -67,14 +67,15 @@ class TaskData(object):
         targets, sentences, ids = [], [], []
 
         data = pd.read_json(raw_data_path)
+
         # data = pd.read_csv(raw_data_path)
         for row in data.values:
+            target = [0,0,0,0,0,0]
             if is_train:
-                target = row[0:1]  # change to my data
+                target[row[0] ]= 1  # change to my data
                 sentence = str(row[2:])
                 id = row[1:2]
             else:
-                target = [-1] # change to my data
                 sentence = str(row[1:])
                 id = row[0:1]
             # sentence = str(row[2:])
@@ -84,4 +85,4 @@ class TaskData(object):
                 targets.append(target)
                 sentences.append(sentence)
                 ids.append(id)
-        return targets,sentences, ids
+        return targets, sentences, ids

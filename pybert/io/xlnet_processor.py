@@ -5,7 +5,7 @@ from ..common.tools import load_pickle
 from ..common.tools import logger
 from ..callback.progressbar import ProgressBar
 from torch.utils.data import TensorDataset
-from pytorch_transformers import XLNetTokenizer
+from transformers import XLNetTokenizer
 
 class InputExample(object):
     def __init__(self, guid, text_a, text_b=None, label=None):

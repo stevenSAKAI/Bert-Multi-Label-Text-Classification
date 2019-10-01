@@ -1,5 +1,6 @@
 import torch
 import warnings
+import numpy as np
 from pathlib import Path
 from argparse import ArgumentParser
 from pybert.train.losses import BCEWithLogLoss
@@ -14,7 +15,7 @@ from pybert.preprocessing.preprocessor import EnglishPreProcessor
 from pybert.callback.modelcheckpoint import ModelCheckpoint
 from pybert.callback.trainingmonitor import TrainingMonitor
 from pybert.train.metrics import AUC, AccuracyThresh, MultiLabelReport
-from pytorch_transformers import AdamW, WarmupLinearSchedule
+from transformers import AdamW, WarmupLinearSchedule
 from torch.utils.data import RandomSampler, SequentialSampler
 
 warnings.filterwarnings("ignore")
@@ -158,6 +159,13 @@ def run_test(args):
                           logger=logger,
                           n_gpu=args.n_gpu)
     result = predictor.predict(data=test_dataloader)
+    ps = np.argmax(result, 1)
+
+    with open('predictions4.csv', mode='w') as f:
+        f.write("id,category\n")
+        for ex_id, example in enumerate(test_examples):
+            f.write(str(example.guid[0]) + ",%d\n" % int(ps[ex_id]))
+
     print(result)
 
 
@@ -170,17 +178,17 @@ def main():
     parser.add_argument("--save_best", action='store_true')
     parser.add_argument("--do_lower_case", action='store_true')
     parser.add_argument('--data_name', default='kaggle', type=str)
-    parser.add_argument("--epochs", default=6, type=int)
+    parser.add_argument("--epochs", default=4, type=int)
     parser.add_argument("--resume_path", default='', type=str)
     parser.add_argument("--mode", default='min', type=str)
     parser.add_argument("--monitor", default='valid_loss', type=str)
-    parser.add_argument("--valid_size", default=0.2, type=float)
+    parser.add_argument("--valid_size", default=0.18, type=float)
     parser.add_argument("--local_rank", type=int, default=-1)
     parser.add_argument("--sorted", default=1, type=int, help='1 : True  0:False ')
     parser.add_argument("--n_gpu", type=str, default='0', help='"0,1,.." or "0" or "" ')
     parser.add_argument('--gradient_accumulation_steps', type=int, default=1)
-    parser.add_argument("--train_batch_size", default=8, type=int)
-    parser.add_argument('--eval_batch_size', default=8, type=int)
+    parser.add_argument("--train_batch_size", default=32, type=int)
+    parser.add_argument('--eval_batch_size', default=32, type=int)
     parser.add_argument("--train_max_seq_len", default=32, type=int)
     parser.add_argument("--eval_max_seq_len", default=32, type=int)
     parser.add_argument('--loss_scale', type=float, default=0)
